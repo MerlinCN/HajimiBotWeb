@@ -522,11 +522,30 @@ const mockPlugins: Plugin[] = [
 export const pluginsApi = {
   getPlugins: async (): Promise<Plugin[]> => {
     try {
-      // For demo purposes, return mock plugins
-      return Promise.resolve(mockPlugins);
+      const response = await fetch('/api/plugins');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      
+      // 转换API返回的数据格式为前端需要的格式
+      return data.data.map((plugin: any) => ({
+        id: plugin.module_name,
+        name: plugin.name,
+        description: plugin.description,
+        settings: Object.entries(plugin.config).map(([key, config]: [string, any]) => ({
+          key,
+          type: Array.isArray(config.value) ? 'array' : typeof config.value === 'boolean' ? 'boolean' : typeof config.value === 'number' ? 'number' : 'string',
+          value: config.value,
+          label: config.title,
+          description: config.description,
+          options: Array.isArray(config.value) ? config.value : undefined
+        })),
+        actions: [] // 暂时不实现actions
+      }));
     } catch (error) {
       console.error('Error fetching plugins:', error);
-      return [];
+      throw error;
     }
   },
   

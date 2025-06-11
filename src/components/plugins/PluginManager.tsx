@@ -17,6 +17,7 @@ const PluginManager: React.FC = () => {
   useEffect(() => {
     const fetchPlugins = async () => {
       try {
+        setIsLoading(true);
         const fetchedPlugins = await pluginsApi.getPlugins();
         setPlugins(fetchedPlugins);
         
@@ -134,12 +135,7 @@ const PluginManager: React.FC = () => {
             >
               <ScrollArea className="h-full">
                 <div className="flex flex-col gap-8 p-6">
-                  <div>
-                    <h3 className="text-xl font-semibold">{plugin.name}</h3>
-                    {plugin.description && (
-                      <p className="mt-1 text-sm text-muted-foreground">{plugin.description}</p>
-                    )}
-                  </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{plugin.description}</p>
                   
                   <PluginSettings
                     plugin={plugin}

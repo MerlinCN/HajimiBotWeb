@@ -63,62 +63,59 @@ const DashboardPage: React.FC = () => {
   return (
     <div className="flex h-screen flex-col bg-background">
       {/* Header */}
-      <header className="border-b">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[240px] p-0">
-                <div className="flex h-16 items-center border-b px-4">
-                  <MessageSquare className="h-5 w-5 text-primary" />
-                  <span className="ml-2 font-semibold">导航菜单</span>
-                </div>
-                <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical">
-                  <TabsList className="flex h-full w-full flex-col justify-start gap-2 bg-transparent p-4">
-                    <DashboardNavItems />
-                  </TabsList>
-                </Tabs>
-              </SheetContent>
-            </Sheet>
-            <div className="rounded-full bg-primary/10 p-1">
-              <MessageSquare className="h-6 w-6 text-primary" />
-            </div>
-            <h1 className="text-xl font-bold">QQ群聊机器人</h1>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            {botInfo && (
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={botInfo.avatar_url} alt={botInfo.nickname} />
-                  <AvatarFallback>{botInfo.nickname.slice(0, 2)}</AvatarFallback>
-                </Avatar>
-                <div className="hidden sm:block">
-                  <p className="text-sm font-medium">{botInfo.nickname}</p>
-                  <p className="text-xs text-muted-foreground">QQ: {botInfo.qq}</p>
-                </div>
+      <header className="border-b h-16 flex items-center px-4">
+        <div className="flex items-center gap-2 flex-1">
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[240px] p-0">
+              <div className="flex h-16 items-center border-b px-4">
+                <MessageSquare className="h-5 w-5 text-primary" />
+                <span className="ml-2 font-semibold">导航菜单</span>
               </div>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="rounded-full"
-            >
-              {isDark ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-            <Button variant="ghost" size="icon" onClick={logout}>
-              <LogOut className="h-5 w-5" />
-            </Button>
+              <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical">
+                <TabsList className="flex h-full w-full flex-col justify-start gap-2 bg-transparent p-4">
+                  <DashboardNavItems />
+                </TabsList>
+              </Tabs>
+            </SheetContent>
+          </Sheet>
+          <div className="rounded-full bg-primary/10 p-1">
+            <MessageSquare className="h-6 w-6 text-primary" />
           </div>
+          <h1 className="text-xl font-bold">QQ群聊机器人</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          {botInfo && (
+            <div className="flex items-center gap-3">
+              <Avatar>
+                <AvatarImage src={botInfo.avatar_url} alt={botInfo.nickname} />
+                <AvatarFallback>{botInfo.nickname.slice(0, 2)}</AvatarFallback>
+              </Avatar>
+              <div className="hidden sm:block">
+                <p className="text-sm font-medium">{botInfo.nickname}</p>
+                <p className="text-xs text-muted-foreground">QQ: {botInfo.qq}</p>
+              </div>
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="rounded-full"
+          >
+            {isDark ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={logout}>
+            <LogOut className="h-5 w-5" />
+          </Button>
         </div>
       </header>
 
