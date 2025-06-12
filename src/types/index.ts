@@ -36,7 +36,8 @@ export type PluginSettingType =
   | 'number' 
   | 'array' 
   | 'object'
-  | 'stringArray';
+  | 'stringArray'
+  | 'numberArray';
 
 export interface PluginSetting {
   key: string;

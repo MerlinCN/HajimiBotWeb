@@ -238,7 +238,7 @@ export const authApi = {
       return { success: false, message: 'Authentication failed' };
     }
   },
-  
+
   logout: async (): Promise<void> => {
     localStorage.removeItem('auth_token');
     document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
@@ -258,7 +258,7 @@ export const groupsApi = {
       return mockGroups;
     }
   },
-  
+
   getGroupMessages: async (groupId: string): Promise<ChatMessage[]> => {
     try {
       const response = await api.get<ChatMessage[]>(`/groups/${groupId}/messages`);
@@ -527,7 +527,7 @@ export const pluginsApi = {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      
+
       // 转换API返回的数据格式为前端需要的格式
       return data.data.map((plugin: any) => ({
         id: plugin.module_name,
@@ -535,7 +535,7 @@ export const pluginsApi = {
         description: plugin.description,
         settings: Object.entries(plugin.config).map(([key, config]: [string, any]) => ({
           key,
-          type:config.input_type,
+          type: config.input_type,
           value: config.value,
           label: config.title,
           description: config.description,
@@ -548,11 +548,11 @@ export const pluginsApi = {
       throw error;
     }
   },
-  
+
   updatePluginSettings: async (pluginId: string, settings: Record<string, any>): Promise<void> => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     // Update mock data
     const plugin = mockPlugins.find(p => p.id === pluginId);
     if (plugin) {
@@ -562,14 +562,14 @@ export const pluginsApi = {
         }
       });
     }
-    
+
     return Promise.resolve();
   },
-  
+
   triggerPluginAction: async (pluginId: string, actionEndpoint: string): Promise<{ success: boolean; message: string }> => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Mock responses for different actions
     const responses: Record<string, { success: boolean; message: string }> = {
       'clear-context': {
@@ -629,7 +629,7 @@ export const pluginsApi = {
         message: '成功导入5个任务配置'
       }
     };
-    
+
     return responses[actionEndpoint] || {
       success: false,
       message: '未知的操作'

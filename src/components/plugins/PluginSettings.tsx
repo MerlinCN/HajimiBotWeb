@@ -7,6 +7,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 import { Plugin, PluginSetting } from '../../types';
 import { Pencil, Plus, Minus } from 'lucide-react';
+import { toast } from 'sonner';
+import axios from 'axios';
+
+// 添加全局样式
+const numberInputStyles = `
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+`;
 
 interface PluginSettingsProps {
   plugin: Plugin;
@@ -27,11 +41,38 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
     setHasChanges(true);
   };
 
+  const saveConfig = async (config: Record<string, any>) => {
+    try {
+      const response = await axios.post('/api/set_config', {
+        module_name: plugin.id,
+        config: config
+      });
+
+      if (response.data.code === 0) {
+        toast.success('设置保存成功');
+        return true;
+      } else {
+        toast.error(response.data.message || '保存失败');
+        return false;
+      }
+    } catch (error) {
+      toast.error('保存设置时发生错误');
+      console.error('保存设置错误:', error);
+      return false;
+    }
+  };
+
   const handleSave = async () => {
     setIsLoading(true);
-    await onSaveSettings(settings);
-    setIsLoading(false);
-    setHasChanges(false);
+    try {
+      const success = await saveConfig(settings);
+      if (success) {
+        await onSaveSettings(settings);
+        setHasChanges(false);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const openMultilineDialog = (key: string) => {
@@ -85,7 +126,7 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
           <div className="space-y-2">
             <Label htmlFor={setting.key}>{setting.label}</Label>
             <div className="space-y-2">
-              {values.map((value: string, index: number) => (
+              {(values.length === 0 ? [''] : values).map((value: string, index: number) => (
                 <div key={index} className="flex gap-2">
                   <Input
                     id={`${setting.key}-${index}`}
@@ -97,17 +138,19 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
                     }}
                     placeholder={`输入${setting.label}`}
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      const newValues = values.filter((_: string, i: number) => i !== index);
-                      handleChange(setting.key, newValues.length ? newValues : ['']);
-                    }}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
+                  {values.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const newValues = values.filter((_: string, i: number) => i !== index);
+                        handleChange(setting.key, newValues.length ? newValues : ['']);
+                      }}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                  )}
                   {index === values.length - 1 && (
                     <Button
                       type="button"
@@ -115,6 +158,55 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
                       size="icon"
                       onClick={() => {
                         handleChange(setting.key, [...values, '']);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'numberArray':
+        const numberValues = settings[setting.key] || [''];
+        return (
+          <div className="space-y-2">
+            <Label htmlFor={setting.key}>{setting.label}</Label>
+            <div className="space-y-2">
+              {(numberValues.length === 0 ? [''] : numberValues).map((value: number | string, index: number) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    id={`${setting.key}-${index}`}
+                    type="number"
+                    value={value}
+                    onChange={(e) => {
+                      const newValues = [...numberValues];
+                      newValues[index] = e.target.value === '' ? '' : Number(e.target.value);
+                      handleChange(setting.key, newValues);
+                    }}
+                    placeholder={`输入${setting.label}`}
+                  />
+                  {numberValues.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const newValues = numberValues.filter((_: number | string, i: number) => i !== index);
+                        handleChange(setting.key, newValues.length ? newValues : ['']);
+                      }}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {index === numberValues.length - 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        handleChange(setting.key, [...numberValues, '']);
                       }}
                     >
                       <Plus className="h-4 w-4" />
@@ -179,6 +271,7 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
 
   return (
     <div className="space-y-6">
+      <style>{numberInputStyles}</style>
       <div>
         <h4 className="text-lg font-medium">插件设置</h4>
         <p className="text-sm text-muted-foreground">配置此插件的行为和响应方式</p>
