@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
 import { Plugin, PluginSetting } from '../../types';
-import { Pencil } from 'lucide-react';
+import { Pencil, Plus, Minus } from 'lucide-react';
 
 interface PluginSettingsProps {
   plugin: Plugin;
@@ -76,6 +76,52 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
               >
                 <Pencil className="h-4 w-4" />
               </Button>
+            </div>
+          </div>
+        );
+      case 'stringArray':
+        const values = settings[setting.key] || [''];
+        return (
+          <div className="space-y-2">
+            <Label htmlFor={setting.key}>{setting.label}</Label>
+            <div className="space-y-2">
+              {values.map((value: string, index: number) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    id={`${setting.key}-${index}`}
+                    value={value}
+                    onChange={(e) => {
+                      const newValues = [...values];
+                      newValues[index] = e.target.value;
+                      handleChange(setting.key, newValues);
+                    }}
+                    placeholder={`输入${setting.label}`}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      const newValues = values.filter((_: string, i: number) => i !== index);
+                      handleChange(setting.key, newValues.length ? newValues : ['']);
+                    }}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  {index === values.length - 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        handleChange(setting.key, [...values, '']);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         );

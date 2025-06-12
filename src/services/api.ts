@@ -535,7 +535,7 @@ export const pluginsApi = {
         description: plugin.description,
         settings: Object.entries(plugin.config).map(([key, config]: [string, any]) => ({
           key,
-          type: Array.isArray(config.value) ? 'array' : typeof config.value === 'boolean' ? 'boolean' : typeof config.value === 'number' ? 'number' : 'string',
+          type:config.input_type,
           value: config.value,
           label: config.title,
           description: config.description,

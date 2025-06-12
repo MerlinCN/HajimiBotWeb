@@ -34,7 +34,6 @@ const PluginManager: React.FC = () => {
         setIsLoading(false);
       }
     };
-
     fetchPlugins();
   }, [addToast, selectedPluginId]);
 
