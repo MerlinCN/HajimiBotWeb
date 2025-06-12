@@ -4,7 +4,7 @@ import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/dialog';
 import { Plugin, PluginSetting } from '../../types';
 import { Pencil, Plus, Minus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -308,6 +308,9 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
         <DialogContent aria-labelledby={dialogTitleId}>
           <DialogHeader>
             <DialogTitle id={dialogTitleId}>{activeSetting?.label || '编辑内容'}</DialogTitle>
+            <DialogDescription>
+              在此处编辑多行文本内容
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <textarea

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../services/api';
 import { BotInfo } from '../types';
+import api from '../services/api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -31,11 +32,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check if user has auth cookie
     const checkAuthStatus = async () => {
       try {
-        // Simple check if we have the cookie set
-        const hasAuthCookie = document.cookie.includes('auth_token=');
-        setIsAuthenticated(hasAuthCookie);
+        // 检查是否有有效的 token
+        const token = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('auth_token='))
+          ?.split('=')[1];
+
+        if (!token) {
+          setIsAuthenticated(false);
+          return;
+        }
+
+        // 如果有 token，先设置为已认证状态
+        setIsAuthenticated(true);
+        
+        // 然后异步验证 token 是否有效
+        try {
+          const response = await api.get('/auth/verify');
+          if (response.data.code !== 0) {
+            // 如果验证失败，清除认证状态
+            setIsAuthenticated(false);
+            document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+          }
+        } catch (error) {
+          // 如果验证请求失败，保持当前状态
+          console.error('Token verification failed:', error);
+        }
       } catch (error) {
-        setIsAuthenticated(false);
+        console.error('Auth status check failed:', error);
       } finally {
         setIsLoading(false);
       }
@@ -55,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setBotInfo(response.bot);
         }
         navigate('/dashboard');
-        return { success: true };
+        return { success: true, message: response.message };
       }
       
       return { 

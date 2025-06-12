@@ -21,6 +21,9 @@ const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     const fetchGroups = async () => {
+      if (activeTab !== 'overview') return;
+      
+      setIsLoading(true);
       try {
         const fetchedGroups = await groupsApi.getGroups();
         setGroups(fetchedGroups);
@@ -32,7 +35,7 @@ const DashboardPage: React.FC = () => {
     };
 
     fetchGroups();
-  }, []);
+  }, [activeTab]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -86,7 +89,7 @@ const DashboardPage: React.FC = () => {
           <div className="rounded-full bg-primary/10 p-1">
             <MessageSquare className="h-6 w-6 text-primary" />
           </div>
-          <h1 className="text-xl font-bold">QQ群聊机器人</h1>
+          <h1 className="text-xl font-bold">管理后台</h1>
         </div>
         <div className="flex items-center gap-4">
           {botInfo && (
@@ -168,7 +171,7 @@ const DashboardPage: React.FC = () => {
                               <Users className="h-6 w-6 text-primary" />
                             </div>
                             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                              {group.members} 人
+                              {group.group_member_count} 人
                             </span>
                           </div>
                           <h3 className="mb-2 text-lg font-semibold">

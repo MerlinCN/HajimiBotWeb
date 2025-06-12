@@ -13,8 +13,7 @@ export interface BotInfo {
 export interface ChatGroup {
   group_id: string;
   group_name: string;
-  members: number;
-  last_message?: ChatMessage;
+  group_member_count: number;
 }
 
 export interface ChatMessage {

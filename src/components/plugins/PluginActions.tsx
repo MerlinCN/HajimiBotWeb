@@ -3,7 +3,7 @@ import { PlayCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/dialog';
 import { PluginAction } from '../../types';
 
 interface ActionParameter {
@@ -130,6 +130,9 @@ const PluginActions: React.FC<PluginActionsProps> = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{activeAction?.name}</DialogTitle>
+            <DialogDescription>
+              请填写以下参数以执行操作
+            </DialogDescription>
           </DialogHeader>
           
           <div className="py-4 space-y-4">

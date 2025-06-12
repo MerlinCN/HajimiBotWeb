@@ -46,42 +46,18 @@ const LoginPage: React.FC = () => {
       const result = await login(token);
       
       if (!result.success) {
-        setError(result.message || '验证失败，请检查您的令牌');
+        setError(result.message || '登录失败，请检查您的令牌');
         setShowError(true);
       } else {
         addToast({
           title: '登录成功',
-          description: '欢迎回来！',
+          description: result.message || '欢迎回来！',
           type: 'success',
         });
+        navigate('/dashboard');
       }
     } catch (err) {
-      setError('验证时发生错误，请重试');
-      setShowError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleTestLogin = async () => {
-    setToken('test_token_123456');
-    setIsLoading(true);
-    
-    try {
-      const result = await login('test_token_123456');
-      
-      if (!result.success) {
-        setError(result.message || '测试登录失败');
-        setShowError(true);
-      } else {
-        addToast({
-          title: '测试登录成功',
-          description: '已使用测试账号登录',
-          type: 'success',
-        });
-      }
-    } catch (err) {
-      setError('测试登录失败，请重试');
+      setError(err instanceof Error ? err.message : '登录时发生错误，请重试');
       setShowError(true);
     } finally {
       setIsLoading(false);
@@ -114,26 +90,14 @@ const LoginPage: React.FC = () => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Button
-              type="submit"
-              className="w-full"
-              isLoading={isLoading}
-              disabled={isLoading}
-            >
-              {isLoading ? '验证中...' : '登录'}
-            </Button>
-            
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full"
-              onClick={handleTestLogin}
-              disabled={isLoading}
-            >
-              使用测试账号登录
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            className="w-full"
+            isLoading={isLoading}
+            disabled={isLoading}
+          >
+            {isLoading ? '验证中...' : '登录'}
+          </Button>
         </form>
       </div>
 

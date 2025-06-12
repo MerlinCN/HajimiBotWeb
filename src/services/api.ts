@@ -11,7 +11,15 @@ const api = axios.create({
 // Add request interceptor to handle auth
 api.interceptors.request.use(
   (config) => {
-    // Add any request headers if needed
+    // 从 cookie 中获取 token
+    const token = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('auth_token='))
+      ?.split('=')[1];
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -26,7 +34,8 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Redirect to login if unauthorized
+      // 清除 cookie 并重定向到登录页
+      document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -40,207 +49,25 @@ const mockBotInfo: BotInfo = {
   avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=2854196310"
 };
 
-// Mock chat groups
-const mockGroups: ChatGroup[] = [
-  {
-    group_id: "123456789",
-    group_name: "技术交流群",
-    members: 512,
-    last_message: {
-      user_id: "987654321",
-      nickname: "张三",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=987654321",
-      content: "有人了解 React 18 的新特性吗？",
-      timestamp: new Date(Date.now() - 5 * 60000).toISOString()
-    }
-  },
-  {
-    group_id: "987654321",
-    group_name: "游戏玩家群",
-    members: 328,
-    last_message: {
-      user_id: "123456789",
-      nickname: "李四",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=123456789",
-      content: "今晚八点开黑！",
-      timestamp: new Date(Date.now() - 15 * 60000).toISOString()
-    }
-  },
-  {
-    group_id: "456789123",
-    group_name: "美食分享群",
-    members: 256,
-    last_message: {
-      user_id: "456789123",
-      nickname: "王五",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=456789123",
-      content: "分享一个超简单的红烧肉做法！[图片]",
-      timestamp: new Date(Date.now() - 30 * 60000).toISOString()
-    }
-  },
-  {
-    group_id: "789123456",
-    group_name: "电影爱好者",
-    members: 421,
-    last_message: {
-      user_id: "789123456",
-      nickname: "赵六",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=789123456",
-      content: "新上映的《沙丘2》太震撼了！",
-      timestamp: new Date(Date.now() - 45 * 60000).toISOString()
-    }
-  }
-];
-
-// Mock messages for each group
-const mockMessages: Record<string, ChatMessage[]> = {
-  "123456789": [
-    {
-      user_id: "111222333",
-      nickname: "小明",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=111222333",
-      content: "大家好，我是新来的",
-      timestamp: new Date(Date.now() - 120 * 60000).toISOString()
-    },
-    {
-      user_id: "444555666",
-      nickname: "小红",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=444555666",
-      content: "欢迎欢迎！",
-      timestamp: new Date(Date.now() - 115 * 60000).toISOString()
-    },
-    {
-      user_id: "777888999",
-      nickname: "小华",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=777888999",
-      content: "最近在学习 React，感觉很有意思",
-      timestamp: new Date(Date.now() - 60 * 60000).toISOString()
-    },
-    {
-      user_id: "987654321",
-      nickname: "张三",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=987654321",
-      content: "有人了解 React 18 的新特性吗？",
-      timestamp: new Date(Date.now() - 5 * 60000).toISOString()
-    }
-  ],
-  "987654321": [
-    {
-      user_id: "999888777",
-      nickname: "游戏达人",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=999888777",
-      content: "有人玩《原神》吗？",
-      timestamp: new Date(Date.now() - 90 * 60000).toISOString()
-    },
-    {
-      user_id: "666555444",
-      nickname: "电竞迷",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=666555444",
-      content: "我在，现在什么版本了？",
-      timestamp: new Date(Date.now() - 85 * 60000).toISOString()
-    },
-    {
-      user_id: "333222111",
-      nickname: "休闲玩家",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=333222111",
-      content: "4.5版本，最近出了新角色",
-      timestamp: new Date(Date.now() - 30 * 60000).toISOString()
-    },
-    {
-      user_id: "123456789",
-      nickname: "李四",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=123456789",
-      content: "今晚八点开黑！",
-      timestamp: new Date(Date.now() - 15 * 60000).toISOString()
-    }
-  ],
-  "456789123": [
-    {
-      user_id: "888777666",
-      nickname: "美食家",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=888777666",
-      content: "今天去吃了一家新开的火锅店",
-      timestamp: new Date(Date.now() - 180 * 60000).toISOString()
-    },
-    {
-      user_id: "555444333",
-      nickname: "吃货一号",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=555444333",
-      content: "在哪里啊？好吃吗？",
-      timestamp: new Date(Date.now() - 175 * 60000).toISOString()
-    },
-    {
-      user_id: "222111000",
-      nickname: "厨艺达人",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=222111000",
-      content: "我也想去尝尝！",
-      timestamp: new Date(Date.now() - 60 * 60000).toISOString()
-    },
-    {
-      user_id: "456789123",
-      nickname: "王五",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=456789123",
-      content: "分享一个超简单的红烧肉做法！[图片]",
-      timestamp: new Date(Date.now() - 30 * 60000).toISOString()
-    }
-  ],
-  "789123456": [
-    {
-      user_id: "777666555",
-      nickname: "影迷",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=777666555",
-      content: "最近有什么好电影推荐吗？",
-      timestamp: new Date(Date.now() - 240 * 60000).toISOString()
-    },
-    {
-      user_id: "444333222",
-      nickname: "影评人",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=444333222",
-      content: "《奥本海默》很不错",
-      timestamp: new Date(Date.now() - 235 * 60000).toISOString()
-    },
-    {
-      user_id: "111000999",
-      nickname: "电影控",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=111000999",
-      content: "我也推荐这部，克里斯托弗·诺兰导演的作品都很棒",
-      timestamp: new Date(Date.now() - 60 * 60000).toISOString()
-    },
-    {
-      user_id: "789123456",
-      nickname: "赵六",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=789123456",
-      content: "新上映的《沙丘2》太震撼了！",
-      timestamp: new Date(Date.now() - 45 * 60000).toISOString()
-    }
-  ]
-};
-
 // Auth API
 export const authApi = {
   login: async (token: string): Promise<AuthResponse> => {
-    // For testing purposes, accept test_token_123456
-    if (token === 'test_token_123456') {
-      // Store the token for future use
-      localStorage.setItem('auth_token', token);
-      document.cookie = `auth_token=${token}; path=/`;
-      return { success: true, bot: mockBotInfo };
-    }
-
     try {
-      const response = await api.post<AuthResponse>('/auth', { token });
-      if (response.data.success) {
-        localStorage.setItem('auth_token', token);
-        document.cookie = `auth_token=${token}; path=/`;
+      const response = await api.post<{ message: string; code: number; token: string }>('/auth', { auth_token: token });
+      
+      if (response.data.code === 0) {
+        // 设置 cookie
+        document.cookie = `auth_token=${response.data.token}; path=/`;
+        return { success: true, message: response.data.message };
       }
-      return response.data;
+      
+      return { success: false, message: response.data.message };
     } catch (error) {
       return { success: false, message: 'Authentication failed' };
     }
   },
 
   logout: async (): Promise<void> => {
-    localStorage.removeItem('auth_token');
     document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     window.location.href = '/login';
   },
@@ -250,23 +77,11 @@ export const authApi = {
 export const groupsApi = {
   getGroups: async (): Promise<ChatGroup[]> => {
     try {
-      const response = await api.get<ChatGroup[]>('/groups');
-      // For demo purposes, return mock groups
-      return Promise.resolve(mockGroups);
+      const response = await api.get<{ data: ChatGroup[] }>('/groups');
+      return response.data.data;
     } catch (error) {
       console.error('Error fetching groups:', error);
-      return mockGroups;
-    }
-  },
-
-  getGroupMessages: async (groupId: string): Promise<ChatMessage[]> => {
-    try {
-      const response = await api.get<ChatMessage[]>(`/groups/${groupId}/messages`);
-      // For demo purposes, return mock messages
-      return Promise.resolve(mockMessages[groupId] || []);
-    } catch (error) {
-      console.error('Error fetching group messages:', error);
-      return mockMessages[groupId] || [];
+      return [];
     }
   },
 };
@@ -399,7 +214,7 @@ export const pluginsApi = {
       success: false,
       message: '未知的操作'
     };
-  },
+  }
 };
 
 export default api;
