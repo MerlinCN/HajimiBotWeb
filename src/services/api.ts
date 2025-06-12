@@ -1,9 +1,25 @@
 import axios from 'axios';
 import { AuthResponse, ChatGroup, ChatMessage, Plugin, BotInfo } from '../types';
 
+// 根据环境变量获取API基础URL
+const getBaseURL = () => {
+  // 如果设置了环境变量，优先使用环境变量
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  
+  // 开发环境使用代理
+  if (import.meta.env.DEV) {
+    return '/api';
+  }
+  
+  // 生产环境使用相对路径
+  return '/api';
+};
+
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: getBaseURL(),
   timeout: 10000,
   withCredentials: true,
 });
