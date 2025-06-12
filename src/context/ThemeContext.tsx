@@ -37,6 +37,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     // Update document class when theme changes
     document.documentElement.classList.toggle('dark', isDark);
+    // Update Radix Theme appearance
+    const themeElement = document.querySelector('[data-radix-theme]');
+    if (themeElement) {
+      themeElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    }
   }, [isDark]);
 
   const toggleTheme = () => setIsDark(!isDark);

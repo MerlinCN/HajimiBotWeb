@@ -6,7 +6,7 @@ import { Plugin } from '../../types';
 import { useToast } from '../../context/ToastContext';
 import PluginSettings from './PluginSettings';
 import PluginActions from './PluginActions';
-import { PlusSquare as PluginSquare } from 'lucide-react';
+import { PlusIcon } from '@radix-ui/react-icons';
 
 const PluginManager: React.FC = () => {
   const [pluginList, setPluginList] = useState<{ id: string; name: string }[]>([]);
@@ -22,7 +22,7 @@ const PluginManager: React.FC = () => {
         setIsLoading(true);
         const fetchedPlugins = await pluginsApi.getPlugins();
         setPluginList(fetchedPlugins);
-        
+
         if (fetchedPlugins.length > 0 && !selectedPluginId) {
           setSelectedPluginId(fetchedPlugins[0].id);
         }
@@ -46,7 +46,7 @@ const PluginManager: React.FC = () => {
   useEffect(() => {
     const fetchPluginConfig = async () => {
       if (!selectedPluginId) return;
-      
+
       try {
         setIsLoading(true);
         const pluginConfig = await pluginsApi.getPluginConfig(selectedPluginId);
@@ -75,20 +75,13 @@ const PluginManager: React.FC = () => {
   const handleSaveSettings = async (pluginId: string, settings: Record<string, any>) => {
     try {
       await pluginsApi.updatePluginSettings(pluginId, settings);
-      
-      addToast({
-        title: '保存成功',
-        description: '插件设置已更新',
-        type: 'success',
-      });
-      
       // 重新获取插件配置以更新本地状态
       const updatedPlugin = await pluginsApi.getPluginConfig(pluginId);
       setSelectedPlugin(updatedPlugin);
     } catch (error) {
       addToast({
-        title: '保存失败',
-        description: '无法保存插件设置，请重试',
+        title: '获取插件设置失败',
+        description: '无法获取插件设置，请重试',
         type: 'destructive',
       });
     }
@@ -97,7 +90,7 @@ const PluginManager: React.FC = () => {
   const handleTriggerAction = async (pluginId: string, actionEndpoint: string) => {
     try {
       const result = await pluginsApi.triggerPluginAction(pluginId, actionEndpoint);
-      
+
       addToast({
         title: result.success ? '操作成功' : '操作失败',
         description: result.message,
@@ -123,7 +116,7 @@ const PluginManager: React.FC = () => {
   if (pluginList.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-        <PluginSquare className="mb-4 h-16 w-16 text-muted-foreground" />
+        <PlusIcon className="mb-4 h-16 w-16 text-muted-foreground" />
         <h2 className="text-xl font-semibold">暂无插件</h2>
         <p className="text-muted-foreground">当前没有可用的插件</p>
       </div>
@@ -132,8 +125,8 @@ const PluginManager: React.FC = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <Tabs 
-        value={selectedPluginId} 
+      <Tabs
+        value={selectedPluginId}
         onValueChange={setSelectedPluginId}
         className="h-full flex flex-col"
       >
@@ -150,7 +143,7 @@ const PluginManager: React.FC = () => {
             ))}
           </TabsList>
         </div>
-        
+
         <div className="flex-1 overflow-hidden">
           {selectedPlugin && (
             <TabsContent
@@ -160,12 +153,12 @@ const PluginManager: React.FC = () => {
               <ScrollArea className="h-full">
                 <div className="flex flex-col gap-8 p-6">
                   <p className="mt-1 text-sm text-muted-foreground">{selectedPlugin.description}</p>
-                  
+
                   <PluginSettings
                     plugin={selectedPlugin}
                     onSaveSettings={(settings) => handleSaveSettings(selectedPlugin.id, settings)}
                   />
-                  
+
                   {selectedPlugin.actions.length > 0 && (
                     <PluginActions
                       pluginId={selectedPlugin.id}

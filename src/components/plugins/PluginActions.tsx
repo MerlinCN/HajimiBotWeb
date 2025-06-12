@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PlayCircle } from 'lucide-react';
+import { PlayIcon } from '@radix-ui/react-icons';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -119,7 +119,7 @@ const PluginActions: React.FC<PluginActionsProps> = ({
               disabled={actionStates[action.endpoint]}
               onClick={() => handleActionClick(action)}
             >
-              <PlayCircle className="h-4 w-4" />
+              <PlayIcon className="h-4 w-4" />
               {action.name}
             </Button>
           </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, MessageSquare, PlugIcon, Moon, Sun, Users, Menu } from 'lucide-react';
+import { ExitIcon, HomeIcon, ChatBubbleIcon, GearIcon, MoonIcon, SunIcon, HamburgerMenuIcon } from '@radix-ui/react-icons';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { Button } from '../components/ui/button';
 import { ScrollArea } from '../components/ui/scroll-area';
@@ -49,7 +49,7 @@ const DashboardPage: React.FC = () => {
         className="w-full justify-start gap-2 px-4 py-2.5 data-[state=active]:bg-background"
         onClick={() => handleTabChange('overview')}
       >
-        <Users className="h-4 w-4" />
+        <ChatBubbleIcon className="h-4 w-4" />
         群聊总览
       </TabsTrigger>
       <TabsTrigger 
@@ -57,7 +57,7 @@ const DashboardPage: React.FC = () => {
         className="w-full justify-start gap-2 px-4 py-2.5 data-[state=active]:bg-background"
         onClick={() => handleTabChange('plugins')}
       >
-        <PlugIcon className="h-4 w-4" />
+        <GearIcon className="h-4 w-4" />
         插件管理
       </TabsTrigger>
     </>
@@ -71,12 +71,12 @@ const DashboardPage: React.FC = () => {
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
+                <HamburgerMenuIcon className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[240px] p-0">
               <div className="flex h-16 items-center border-b px-4">
-                <MessageSquare className="h-5 w-5 text-primary" />
+                <ChatBubbleIcon className="h-5 w-5 text-primary" />
                 <span className="ml-2 font-semibold">导航菜单</span>
               </div>
               <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical">
@@ -87,7 +87,7 @@ const DashboardPage: React.FC = () => {
             </SheetContent>
           </Sheet>
           <div className="rounded-full bg-primary/10 p-1">
-            <MessageSquare className="h-6 w-6 text-primary" />
+            <HomeIcon className="h-6 w-6 text-primary" />
           </div>
           <h1 className="text-xl font-bold">管理后台</h1>
         </div>
@@ -111,13 +111,13 @@ const DashboardPage: React.FC = () => {
             className="rounded-full"
           >
             {isDark ? (
-              <Sun className="h-5 w-5" />
+              <SunIcon className="h-5 w-5" />
             ) : (
-              <Moon className="h-5 w-5" />
+              <MoonIcon className="h-5 w-5" />
             )}
           </Button>
           <Button variant="ghost" size="icon" onClick={logout}>
-            <LogOut className="h-5 w-5" />
+            <ExitIcon className="h-5 w-5" />
           </Button>
         </div>
       </header>
@@ -153,7 +153,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                   ) : groups.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <Users className="mb-4 h-16 w-16 text-muted-foreground" />
+                      <ChatBubbleIcon className="mb-4 h-16 w-16 text-muted-foreground" />
                       <h3 className="text-lg font-medium">暂无群聊</h3>
                       <p className="text-sm text-muted-foreground">
                         添加机器人到QQ群聊即可在此处显示
@@ -168,7 +168,7 @@ const DashboardPage: React.FC = () => {
                         >
                           <div className="mb-4 flex items-center justify-between">
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                              <Users className="h-6 w-6 text-primary" />
+                              <ChatBubbleIcon className="h-6 w-6 text-primary" />
                             </div>
                             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                               {group.group_member_count} 人

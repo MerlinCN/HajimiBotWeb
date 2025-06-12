@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Bot, Users } from 'lucide-react';
+import { PersonIcon, GroupIcon } from '@radix-ui/react-icons';
 import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { ChatGroup } from '../../types';
 import { groupsApi } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
-import { formatDate, truncateText } from '../../lib/utils';
+import { truncateText } from '../../lib/utils';
 
 interface GroupListProps {
   onSelectGroup: (groupId: string) => void;
@@ -62,7 +62,7 @@ const GroupList: React.FC<GroupListProps> = ({ onSelectGroup, selectedGroupId })
           <div className="space-y-1 p-2">
             {groups.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Users className="mb-2 h-12 w-12 text-muted-foreground" />
+                <GroupIcon className="mb-2 h-12 w-12 text-muted-foreground" />
                 <h3 className="text-lg font-medium">暂无群聊</h3>
                 <p className="text-sm text-muted-foreground">添加机器人到QQ群聊即可在此处显示</p>
               </div>
@@ -78,23 +78,12 @@ const GroupList: React.FC<GroupListProps> = ({ onSelectGroup, selectedGroupId })
                 >
                   <div className="flex w-full items-start gap-3 overflow-hidden">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Bot className="h-5 w-5 text-primary" />
+                      <PersonIcon className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1 overflow-hidden">
                       <div className="flex items-center justify-between">
                         <h3 className="font-medium">{truncateText(group.group_name, 15)}</h3>
-                        <span className="text-xs text-muted-foreground">{group.members}人</span>
                       </div>
-                      {group.last_message && (
-                        <p className="line-clamp-1 text-sm text-muted-foreground">
-                          {truncateText(group.last_message.content, 20)}
-                        </p>
-                      )}
-                      {group.last_message && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {formatDate(group.last_message.timestamp)}
-                        </p>
-                      )}
                     </div>
                   </div>
                 </Button>

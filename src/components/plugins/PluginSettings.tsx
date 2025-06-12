@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/dialog';
 import { Plugin, PluginSetting } from '../../types';
 import { Pencil, Plus, Minus } from 'lucide-react';
-import { toast } from 'sonner';
 import api from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 // 添加全局样式
 const numberInputStyles = `
@@ -35,44 +35,43 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
   const [hasChanges, setHasChanges] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeSettingKey, setActiveSettingKey] = useState<string>('');
-
+  const { addToast } = useToast();
   const handleChange = (key: string, value: any) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
     setHasChanges(true);
   };
 
-  const saveConfig = async (config: Record<string, any>) => {
+  const handleSave = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
-      // 预处理配置数据
-      console.log(config);
       const response = await api.post('/plugins/set_config', {
         module_name: plugin.id,
-        config: config
+        config: settings
       });
 
       if (response.data.code === 0) {
-        toast.success('设置保存成功');
-        return true;
-      } else {
-        toast.error(response.data.message || '保存失败');
-        return false;
-      }
-    } catch (error) {
-      toast.error('保存设置时发生错误');
-      console.error('保存设置错误:', error);
-      return false;
-    }
-  };
-
-  const handleSave = async () => {
-    if (isLoading) return; // 如果正在加载，直接返回
-    setIsLoading(true);
-    try {
-      const success = await saveConfig(settings);
-      if (success) {
+        addToast({
+          title: "成功",
+          description: "设置保存成功",
+          type: "success"
+        });
         await onSaveSettings(settings);
         setHasChanges(false);
+      } else {
+        addToast({
+          title: "错误",
+          description: response.data.message || '保存失败',
+          type: "destructive"
+        });
       }
+    } catch (error) {
+      addToast({
+        title: "错误",
+        description: "保存设置时发生错误",
+        type: "destructive"
+      });
+      console.error('保存设置错误:', error);
     } finally {
       setIsLoading(false);
     }

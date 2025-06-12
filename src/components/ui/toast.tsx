@@ -1,8 +1,7 @@
 import * as React from "react";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva, type VariantProps } from "class-variance-authority";
-import { X } from "lucide-react";
-
+import { Cross2Icon } from "@radix-ui/react-icons";
 import { cn } from "../../lib/utils";
 
 const ToastProvider = ToastPrimitives.Provider;
@@ -28,12 +27,9 @@ const toastVariants = cva(
     variants: {
       variant: {
         default: "border bg-background",
-        destructive:
-          "destructive group border-destructive/30 bg-destructive/10 text-destructive dark:border-destructive/30 dark:bg-destructive/20",
-        success:
-          "success group border-success/30 bg-success/10 text-success dark:border-success/30 dark:bg-success/20",
-        warning:
-          "warning group border-warning/30 bg-warning/10 text-warning dark:border-warning/30 dark:bg-warning/20",
+        destructive: "destructive group border-destructive/30 bg-destructive/10 text-destructive dark:border-destructive/30 dark:bg-destructive/20",
+        success: "success group border-success/30 bg-success/10 text-success dark:border-success/30 dark:bg-success/20",
+        warning: "warning group border-warning/30 bg-warning/10 text-warning dark:border-warning/30 dark:bg-warning/20",
       },
     },
     defaultVariants: {
@@ -85,7 +81,7 @@ const ToastClose = React.forwardRef<
     toast-close=""
     {...props}
   >
-    <X className="h-4 w-4" />
+    <Cross2Icon className="h-4 w-4" />
   </ToastPrimitives.Close>
 ));
 ToastClose.displayName = ToastPrimitives.Close.displayName;

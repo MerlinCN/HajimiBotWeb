@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot } from 'lucide-react';
+import { PersonIcon } from '@radix-ui/react-icons';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -69,7 +69,7 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md animate-fade-in space-y-8 rounded-lg border bg-card p-8 shadow-lg">
         <div className="flex flex-col items-center justify-center space-y-2 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <Bot className="h-8 w-8 text-primary" />
+            <PersonIcon className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">QQ群聊机器人管理系统</h1>
           <p className="text-sm text-muted-foreground">登录以访问控制面板</p>
