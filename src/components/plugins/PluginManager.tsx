@@ -9,17 +9,19 @@ import PluginActions from './PluginActions';
 import { PlusSquare as PluginSquare } from 'lucide-react';
 
 const PluginManager: React.FC = () => {
-  const [plugins, setPlugins] = useState<Plugin[]>([]);
+  const [pluginList, setPluginList] = useState<{ id: string; name: string }[]>([]);
+  const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(null);
   const [selectedPluginId, setSelectedPluginId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const { addToast } = useToast();
 
+  // 获取插件列表
   useEffect(() => {
-    const fetchPlugins = async () => {
+    const fetchPluginList = async () => {
       try {
         setIsLoading(true);
         const fetchedPlugins = await pluginsApi.getPlugins();
-        setPlugins(fetchedPlugins);
+        setPluginList(fetchedPlugins);
         
         if (fetchedPlugins.length > 0 && !selectedPluginId) {
           setSelectedPluginId(fetchedPlugins[0].id);
@@ -30,12 +32,45 @@ const PluginManager: React.FC = () => {
           description: '无法加载插件列表，请刷新页面重试',
           type: 'destructive',
         });
+        // 设置一个空的插件列表，防止循环请求
+        setPluginList([]);
+        setSelectedPluginId('');
       } finally {
         setIsLoading(false);
       }
     };
-    fetchPlugins();
-  }, [addToast, selectedPluginId]);
+    fetchPluginList();
+  }, []);
+
+  // 获取选中插件的配置
+  useEffect(() => {
+    const fetchPluginConfig = async () => {
+      if (!selectedPluginId) return;
+      
+      try {
+        setIsLoading(true);
+        const pluginConfig = await pluginsApi.getPluginConfig(selectedPluginId);
+        setSelectedPlugin(pluginConfig);
+      } catch (error) {
+        addToast({
+          title: '获取插件配置失败',
+          description: '无法加载插件配置，请重试',
+          type: 'destructive',
+        });
+        // 设置一个空的插件配置，防止循环请求
+        setSelectedPlugin({
+          id: selectedPluginId,
+          name: pluginList.find(p => p.id === selectedPluginId)?.name || '未知插件',
+          description: '加载失败',
+          settings: [],
+          actions: []
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPluginConfig();
+  }, [selectedPluginId, addToast, pluginList]);
 
   const handleSaveSettings = async (pluginId: string, settings: Record<string, any>) => {
     try {
@@ -47,18 +82,9 @@ const PluginManager: React.FC = () => {
         type: 'success',
       });
       
-      // Update local state
-      setPlugins(plugins.map(plugin => 
-        plugin.id === pluginId 
-          ? {
-              ...plugin,
-              settings: plugin.settings.map(setting => ({
-                ...setting,
-                value: settings[setting.key] !== undefined ? settings[setting.key] : setting.value
-              }))
-            }
-          : plugin
-      ));
+      // 重新获取插件配置以更新本地状态
+      const updatedPlugin = await pluginsApi.getPluginConfig(pluginId);
+      setSelectedPlugin(updatedPlugin);
     } catch (error) {
       addToast({
         title: '保存失败',
@@ -94,7 +120,7 @@ const PluginManager: React.FC = () => {
     );
   }
 
-  if (plugins.length === 0) {
+  if (pluginList.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-8 text-center">
         <PluginSquare className="mb-4 h-16 w-16 text-muted-foreground" />
@@ -113,7 +139,7 @@ const PluginManager: React.FC = () => {
       >
         <div className="border-b px-4">
           <TabsList className="my-2 bg-background">
-            {plugins.map((plugin) => (
+            {pluginList.map((plugin) => (
               <TabsTrigger
                 key={plugin.id}
                 value={plugin.id}
@@ -126,32 +152,31 @@ const PluginManager: React.FC = () => {
         </div>
         
         <div className="flex-1 overflow-hidden">
-          {plugins.map((plugin) => (
+          {selectedPlugin && (
             <TabsContent
-              key={plugin.id}
-              value={plugin.id}
+              value={selectedPluginId}
               className="h-full overflow-hidden data-[state=active]:animate-fade-in"
             >
               <ScrollArea className="h-full">
                 <div className="flex flex-col gap-8 p-6">
-                    <p className="mt-1 text-sm text-muted-foreground">{plugin.description}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{selectedPlugin.description}</p>
                   
                   <PluginSettings
-                    plugin={plugin}
-                    onSaveSettings={(settings) => handleSaveSettings(plugin.id, settings)}
+                    plugin={selectedPlugin}
+                    onSaveSettings={(settings) => handleSaveSettings(selectedPlugin.id, settings)}
                   />
                   
-                  {plugin.actions.length > 0 && (
+                  {selectedPlugin.actions.length > 0 && (
                     <PluginActions
-                      pluginId={plugin.id}
-                      actions={plugin.actions}
-                      onTriggerAction={(actionEndpoint) => handleTriggerAction(plugin.id, actionEndpoint)}
+                      pluginId={selectedPlugin.id}
+                      actions={selectedPlugin.actions}
+                      onTriggerAction={(actionEndpoint) => handleTriggerAction(selectedPlugin.id, actionEndpoint)}
                     />
                   )}
                 </div>
               </ScrollArea>
             </TabsContent>
-          ))}
+          )}
         </div>
       </Tabs>
     </div>

@@ -271,269 +271,40 @@ export const groupsApi = {
   },
 };
 
-// Mock plugins data
-const mockPlugins: Plugin[] = [
-  {
-    id: 'chatgpt',
-    name: 'ChatGPT 助手',
-    description: '使用 ChatGPT API 为群聊提供智能对话功能',
-    settings: [
-      {
-        key: 'api_key',
-        type: 'string',
-        label: 'API 密钥',
-        value: '',
-        description: '输入您的 OpenAI API 密钥'
-      },
-      {
-        key: 'model',
-        type: 'array',
-        label: '模型选择',
-        value: 'gpt-3.5-turbo',
-        options: ['gpt-3.5-turbo', 'gpt-4'],
-        description: '选择要使用的 ChatGPT 模型'
-      },
-      {
-        key: 'temperature',
-        type: 'number',
-        label: '随机性',
-        value: 0.7,
-        description: '控制回答的随机性，0-1之间'
-      },
-      {
-        key: 'max_tokens',
-        type: 'number',
-        label: '最大长度',
-        value: 2000,
-        description: '单次回复的最大字符数'
-      },
-      {
-        key: 'auto_reply',
-        type: 'boolean',
-        label: '自动回复',
-        value: true,
-        description: '是否自动回复@机器人的消息'
-      },
-      {
-        key: 'system_prompt',
-        type: 'string',
-        label: '系统提示词',
-        value: '你是一个友善的AI助手',
-        description: '设置AI助手的角色和行为'
-      }
-    ],
-    actions: [
-      {
-        name: '清理上下文',
-        endpoint: 'clear-context'
-      },
-      {
-        name: '测试连接',
-        endpoint: 'test-connection'
-      },
-      {
-        name: '导出对话',
-        endpoint: 'export-chat'
-      },
-      {
-        name: '重置设置',
-        endpoint: 'reset-settings'
-      }
-    ]
-  },
-  {
-    id: 'welcome',
-    name: '欢迎插件',
-    description: '自动欢迎新成员加入群聊',
-    settings: [
-      {
-        key: 'welcome_message',
-        type: 'string',
-        label: '欢迎语',
-        value: '欢迎 {nickname} 加入群聊！',
-        description: '使用 {nickname} 表示新成员的昵称'
-      },
-      {
-        key: 'send_image',
-        type: 'boolean',
-        label: '发送图片',
-        value: true,
-        description: '是否同时发送欢迎图片'
-      },
-      {
-        key: 'image_url',
-        type: 'string',
-        label: '图片链接',
-        value: '',
-        description: '自定义欢迎图片的URL'
-      },
-      {
-        key: 'delay',
-        type: 'number',
-        label: '延迟发送',
-        value: 0,
-        description: '欢迎消息延迟发送的秒数'
-      },
-      {
-        key: 'welcome_style',
-        type: 'array',
-        label: '欢迎样式',
-        value: 'simple',
-        options: ['simple', 'card', 'image'],
-        description: '选择欢迎消息的显示样式'
-      }
-    ],
-    actions: [
-      {
-        name: '发送测试欢迎语',
-        endpoint: 'test-welcome'
-      },
-      {
-        name: '预览欢迎卡片',
-        endpoint: 'preview-card'
-      }
-    ]
-  },
-  {
-    id: 'moderation',
-    name: '内容审核',
-    description: '自动审核群聊消息，过滤不当内容',
-    settings: [
-      {
-        key: 'filter_level',
-        type: 'array',
-        label: '过滤等级',
-        value: 'medium',
-        options: ['low', 'medium', 'high'],
-        description: '设置内容过滤的严格程度'
-      },
-      {
-        key: 'auto_delete',
-        type: 'boolean',
-        label: '自动删除',
-        value: false,
-        description: '是否自动删除违规消息'
-      },
-      {
-        key: 'notify_admins',
-        type: 'boolean',
-        label: '通知管理员',
-        value: true,
-        description: '发现违规内容时是否通知管理员'
-      },
-      {
-        key: 'warning_message',
-        type: 'string',
-        label: '警告消息',
-        value: '请注意群规，避免发送违规内容',
-        description: '发现违规内容时的提醒消息'
-      },
-      {
-        key: 'max_warnings',
-        type: 'number',
-        label: '最大警告次数',
-        value: 3,
-        description: '达到此次数将被禁言'
-      },
-      {
-        key: 'mute_duration',
-        type: 'number',
-        label: '禁言时长',
-        value: 300,
-        description: '违规禁言的时长（秒）'
-      }
-    ],
-    actions: [
-      {
-        name: '查看违规记录',
-        endpoint: 'view-logs'
-      },
-      {
-        name: '更新过滤词库',
-        endpoint: 'update-keywords'
-      },
-      {
-        name: '导出审核报告',
-        endpoint: 'export-report'
-      },
-      {
-        name: '清理警告记录',
-        endpoint: 'clear-warnings'
-      }
-    ]
-  },
-  {
-    id: 'schedule',
-    name: '定时任务',
-    description: '设置定时发送消息和执行任务',
-    settings: [
-      {
-        key: 'timezone',
-        type: 'array',
-        label: '时区',
-        value: 'Asia/Shanghai',
-        options: ['Asia/Shanghai', 'UTC', 'America/New_York'],
-        description: '设置定时任务的时区'
-      },
-      {
-        key: 'notify_changes',
-        type: 'boolean',
-        label: '变更通知',
-        value: true,
-        description: '任务变更时是否通知管理员'
-      },
-      {
-        key: 'max_tasks',
-        type: 'number',
-        label: '最大任务数',
-        value: 10,
-        description: '每个群可以设置的最大定时任务数'
-      },
-      {
-        key: 'default_reminder',
-        type: 'number',
-        label: '默认提醒时间',
-        value: 300,
-        description: '任务执行前提醒时间（秒）'
-      }
-    ],
-    actions: [
-      {
-        name: '查看所有任务',
-        endpoint: 'list-tasks'
-      },
-      {
-        name: '立即执行任务',
-        endpoint: 'run-task'
-      },
-      {
-        name: '暂停所有任务',
-        endpoint: 'pause-all'
-      },
-      {
-        name: '导入任务配置',
-        endpoint: 'import-config'
-      }
-    ]
-  }
-];
-
 // Plugins API
 export const pluginsApi = {
-  getPlugins: async (): Promise<Plugin[]> => {
+  getPlugins: async (): Promise<{ id: string; name: string }[]> => {
     try {
-      const response = await fetch('/api/plugins');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-
-      // 转换API返回的数据格式为前端需要的格式
-      return data.data.map((plugin: any) => ({
+      const listResponse = await api.get<{ data: { module_name: string; name: string }[] }>('/plugins');
+      return listResponse.data.data.map(plugin => ({
         id: plugin.module_name,
-        name: plugin.name,
-        description: plugin.description,
-        settings: Object.entries(plugin.config).map(([key, config]: [string, any]) => ({
+        name: plugin.name
+      }));
+    } catch (error) {
+      console.error('Error fetching plugins:', error);
+      throw error;
+    }
+  },
+
+  getPluginConfig: async (pluginId: string): Promise<Plugin> => {
+    try {
+      const detailResponse = await api.get<{ data: Array<{
+        module_name: string;
+        name: string;
+        description: string;
+        config: Record<string, any>;
+      }> }>(`/plugins/config?module_name=${pluginId}`);
+      
+      if (detailResponse.data.data.length === 0) {
+        throw new Error('Plugin not found');
+      }
+
+      const pluginInfo = detailResponse.data.data[0];
+      return {
+        id: pluginInfo.module_name,
+        name: pluginInfo.name,
+        description: pluginInfo.description,
+        settings: Object.entries(pluginInfo.config).map(([key, config]) => ({
           key,
           type: config.input_type,
           value: config.value,
@@ -542,35 +313,29 @@ export const pluginsApi = {
           options: Array.isArray(config.value) ? config.value : undefined
         })),
         actions: [] // 暂时不实现actions
-      }));
+      };
     } catch (error) {
-      console.error('Error fetching plugins:', error);
+      console.error('Error fetching plugin config:', error);
       throw error;
     }
   },
 
   updatePluginSettings: async (pluginId: string, settings: Record<string, any>): Promise<void> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Update mock data
-    const plugin = mockPlugins.find(p => p.id === pluginId);
-    if (plugin) {
-      plugin.settings.forEach(setting => {
-        if (settings[setting.key] !== undefined) {
-          setting.value = settings[setting.key];
-        }
+    try {
+      await api.post('/plugins/set_config', {
+        module_name: pluginId,
+        config: settings
       });
+    } catch (error) {
+      console.error('Error updating plugin settings:', error);
+      throw error;
     }
-
-    return Promise.resolve();
   },
 
   triggerPluginAction: async (pluginId: string, actionEndpoint: string): Promise<{ success: boolean; message: string }> => {
-    // Simulate API delay
+    // 由于后端API没有提供action相关的接口，暂时保持原有的模拟实现
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Mock responses for different actions
     const responses: Record<string, { success: boolean; message: string }> = {
       'clear-context': {
         success: true,

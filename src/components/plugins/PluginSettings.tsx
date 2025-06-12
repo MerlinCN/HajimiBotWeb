@@ -43,7 +43,9 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
 
   const saveConfig = async (config: Record<string, any>) => {
     try {
-      const response = await axios.post('/api/set_config', {
+      // 预处理配置数据
+      console.log(config);
+      const response = await axios.post('/api/plugins/set_config', {
         module_name: plugin.id,
         config: config
       });
@@ -63,6 +65,7 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
   };
 
   const handleSave = async () => {
+    if (isLoading) return; // 如果正在加载，直接返回
     setIsLoading(true);
     try {
       const success = await saveConfig(settings);
@@ -89,13 +92,15 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
     switch (setting.type) {
       case 'boolean':
         return (
-          <div className="flex items-center space-x-2">
-            <Switch
-              id={setting.key}
-              checked={settings[setting.key] === true}
-              onCheckedChange={(checked) => handleChange(setting.key, checked)}
-            />
+          <div className="space-y-2">
             <Label htmlFor={setting.key}>{setting.label}</Label>
+            <div className="flex items-center">
+              <Switch
+                id={setting.key}
+                checked={settings[setting.key] === true}
+                onCheckedChange={(checked) => handleChange(setting.key, checked)}
+              />
+            </div>
           </div>
         );
       case 'string':
@@ -169,7 +174,7 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
           </div>
         );
       case 'numberArray':
-        const numberValues = settings[setting.key] || [''];
+        const numberValues = settings[setting.key] || [];
         return (
           <div className="space-y-2">
             <Label htmlFor={setting.key}>{setting.label}</Label>
@@ -183,7 +188,9 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
                     onChange={(e) => {
                       const newValues = [...numberValues];
                       newValues[index] = e.target.value === '' ? '' : Number(e.target.value);
-                      handleChange(setting.key, newValues);
+                      // 过滤掉空值
+                      const filteredValues = newValues.filter(v => v !== '');
+                      handleChange(setting.key, filteredValues.length ? filteredValues : []);
                     }}
                     placeholder={`输入${setting.label}`}
                   />
@@ -194,7 +201,7 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
                       size="icon"
                       onClick={() => {
                         const newValues = numberValues.filter((_: number | string, i: number) => i !== index);
-                        handleChange(setting.key, newValues.length ? newValues : ['']);
+                        handleChange(setting.key, newValues.length ? newValues : []);
                       }}
                     >
                       <Minus className="h-4 w-4" />
