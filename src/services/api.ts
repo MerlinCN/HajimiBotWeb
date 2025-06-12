@@ -14,7 +14,7 @@ const getBaseURL = () => {
   }
   
   // 生产环境使用相对路径
-  return '/api';
+  return 'http://127.0.0.1:12455';
 };
 
 // Create axios instance with base configuration
