@@ -11,13 +11,15 @@ const api = axios.create({
 // Add request interceptor to handle auth
 api.interceptors.request.use(
   (config) => {
-    // 从 cookie 中获取 token
+    // 从 cookie 中获取 tokenF
     const token = document.cookie
       .split('; ')
       .find(row => row.startsWith('auth_token='))
       ?.split('=')[1];
 
     if (token) {
+      // 确保headers对象存在
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

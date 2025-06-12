@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Plugin, PluginSetting } from '../../types';
 import { Pencil, Plus, Minus } from 'lucide-react';
 import { toast } from 'sonner';
-import axios from 'axios';
+import api from '../../services/api';
 
 // 添加全局样式
 const numberInputStyles = `
@@ -45,7 +45,7 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
     try {
       // 预处理配置数据
       console.log(config);
-      const response = await axios.post('/api/plugins/set_config', {
+      const response = await api.post('/plugins/set_config', {
         module_name: plugin.id,
         config: config
       });
