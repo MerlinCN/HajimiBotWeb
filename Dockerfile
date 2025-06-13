@@ -16,16 +16,17 @@ COPY . .
 RUN npm run build
 
 # 生产阶段
-FROM nginx:alpine
+FROM node:20-alpine
 
-# 复制构建产物到Nginx目录
-COPY --from=builder /app/dist /usr/share/nginx/html
+WORKDIR /app
 
-# 复制Nginx配置
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# 复制依赖和构建产物
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
 
 # 暴露端口
-EXPOSE 80
+EXPOSE 3000
 
-# 启动Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# 启动生产环境
+CMD ["npm", "run", "start:prod"]
