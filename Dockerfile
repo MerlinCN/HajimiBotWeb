@@ -20,6 +20,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 # 复制依赖和构建产物
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
