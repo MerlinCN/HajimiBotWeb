@@ -70,7 +70,7 @@ const PluginManager: React.FC = () => {
       }
     };
     fetchPluginConfig();
-  }, [selectedPluginId, addToast, pluginList]);
+  }, [selectedPluginId, pluginList]);
 
   const handleSaveSettings = async (pluginId: string, settings: Record<string, any>) => {
     try {

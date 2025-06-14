@@ -48,7 +48,7 @@
 
 1. 克隆仓库
 ```bash
-git clone https://github.com/yourusername/HajimiBotWeb.git
+git clone https://github.com/merlincn/HajimiBotWeb.git
 cd HajimiBotWeb
 ```
 
@@ -81,6 +81,16 @@ docker run -d -p 80:80 hajimibot-web
 
 现在你可以通过访问 `http://localhost` 来查看应用。
 
+### 生产环境启动
+
+在本地或服务器上，你可以通过以下命令启动生产环境：
+
+```bash
+npm run start:prod
+```
+
+这将启动 Vite 预览服务器，监听 5173 端口，并对外暴露服务。
+
 ## 🛠️ 技术栈
 
 - **前端框架**: React 18
@@ -90,13 +100,14 @@ docker run -d -p 80:80 hajimibot-web
 - **UI 组件**: Radix UI
 - **路由**: React Router
 - **HTTP 客户端**: Axios
-- **容器化**: Docker + Nginx
+- **容器化**: Docker + Node.js
 
 ## 📝 开发脚本
 
 - `npm run dev` - 启动开发服务器
 - `npm run build` - 构建生产版本
 - `npm run preview` - 预览生产构建
+- `npm run start:prod` - 启动生产环境
 - `npm run lint` - 运行 ESLint 检查
 
 ## 🤝 贡献

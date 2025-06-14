@@ -1,5 +1,29 @@
 import axios from 'axios';
-import { AuthResponse, ChatGroup, ChatMessage, Plugin, BotInfo } from '../types';
+import { AuthResponse, ChatGroup, ChatMessage, Plugin, BotInfo, PluginSettingType } from '../types';
+
+// 插件API响应类型定义
+interface ConfigField {
+  value: any;
+  title: string;
+  description: string;
+  default: any;
+  input_type: string;
+}
+
+interface PluginConfig {
+  fields: Record<string, ConfigField>;
+}
+
+interface PluginInfo {
+  module_name: string;
+  name: string;
+  description: string;
+  config: PluginConfig;
+}
+
+interface PluginInfoResponse {
+  data: PluginInfo;
+}
 
 // 根据环境获取基础URL
 const getBaseURL = () => {
@@ -113,29 +137,25 @@ export const pluginsApi = {
 
   getPluginConfig: async (pluginId: string): Promise<Plugin> => {
     try {
-      const detailResponse = await api.get<{ data: Array<{
-        module_name: string;
-        name: string;
-        description: string;
-        config: Record<string, any>;
-      }> }>(`/plugins/config?module_name=${pluginId}`);
+      const detailResponse = await api.get<PluginInfoResponse>(`/plugins/config?module_name=${pluginId}`);
       
-      if (detailResponse.data.data.length === 0) {
+      if (!detailResponse.data.data) {
         throw new Error('Plugin not found');
       }
 
-      const pluginInfo = detailResponse.data.data[0];
+      const pluginInfo = detailResponse.data.data;
       return {
         id: pluginInfo.module_name,
         name: pluginInfo.name,
         description: pluginInfo.description,
-        settings: Object.entries(pluginInfo.config).map(([key, config]) => ({
+        settings: Object.entries(pluginInfo.config.fields).map(([key, field]) => ({
           key,
-          type: config.input_type,
-          value: config.value,
-          label: config.title,
-          description: config.description,
-          options: Array.isArray(config.value) ? config.value : undefined
+          type: field.input_type as PluginSettingType,
+          value: field.value,
+          label: field.title,
+          description: field.description,
+          default: field.default,
+          options: Array.isArray(field.value) ? field.value : undefined
         })),
         actions: [] // 暂时不实现actions
       };
@@ -147,9 +167,25 @@ export const pluginsApi = {
 
   updatePluginSettings: async (pluginId: string, settings: Record<string, any>): Promise<void> => {
     try {
+      // 获取插件配置以获取字段类型信息
+      const pluginConfig = await api.get<PluginInfoResponse>(`/plugins/config?module_name=${pluginId}`);
+      const fields = pluginConfig.data.data.config.fields;
+
+      // 处理设置值
+      const processedSettings = Object.entries(settings).reduce((acc, [key, value]) => {
+        const field = fields[key];
+        if (field?.input_type === 'stringArray' && Array.isArray(value)) {
+          // 过滤掉空字符串
+          acc[key] = value.filter((v: string) => v !== '');
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Record<string, any>);
+
       await api.post('/plugins/set_config', {
         module_name: pluginId,
-        config: settings
+        config: processedSettings
       });
     } catch (error) {
       console.error('Error updating plugin settings:', error);
