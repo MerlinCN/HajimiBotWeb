@@ -1,20 +1,15 @@
 import axios from 'axios';
 import { AuthResponse, ChatGroup, ChatMessage, Plugin, BotInfo } from '../types';
 
-// 根据环境变量获取API基础URL
+// 根据环境获取基础URL
 const getBaseURL = () => {
-  // 如果设置了环境变量，优先使用环境变量
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
-  
-  // 开发环境使用代理
+  // 开发环境直接使用后端地址
   if (import.meta.env.DEV) {
-    return '/api';
+    return 'http://127.0.0.1:12455';
   }
   
   // 生产环境使用相对路径
-  return 'http://127.0.0.1:12455';
+  return '/api';
 };
 
 // Create axios instance with base configuration
@@ -27,14 +22,12 @@ const api = axios.create({
 // Add request interceptor to handle auth
 api.interceptors.request.use(
   (config) => {
-    // 从 cookie 中获取 tokenF
     const token = document.cookie
       .split('; ')
       .find(row => row.startsWith('auth_token='))
       ?.split('=')[1];
 
     if (token) {
-      // 确保headers对象存在
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -52,7 +45,6 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // 清除 cookie 并重定向到登录页
       document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       window.location.href = '/login';
     }

@@ -16,20 +16,16 @@ COPY . .
 RUN npm run build
 
 # 生产阶段
-FROM node:20-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+# 复制构建产物到 Nginx 的静态文件目录
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-ARG VITE_API_BASE_URL
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-
-# 复制依赖和构建产物
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
+# 复制自定义的 Nginx 配置文件
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 暴露端口
-EXPOSE 3000
+EXPOSE 80
 
-# 启动生产环境
-CMD ["npm", "run", "start:prod"]
+# 启动 Nginx
+CMD ["nginx", "-g", "daemon off;"]
