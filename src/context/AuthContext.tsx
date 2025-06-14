@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(false);
       setBotInfo(null);
       setIsLoading(false);
-      navigate('/login');
+      navigate('/admin/login');
     }
   };
 

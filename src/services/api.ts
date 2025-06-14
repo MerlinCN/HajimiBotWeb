@@ -70,7 +70,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-      window.location.href = '/login';
+      window.location.href = '/admin/login';
     }
     return Promise.reject(error);
   }
@@ -103,7 +103,7 @@ export const authApi = {
 
   logout: async (): Promise<void> => {
     document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    window.location.href = '/login';
+    window.location.href = '/admin/login';
   },
 };
 

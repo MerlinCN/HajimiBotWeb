@@ -36,7 +36,7 @@ function AppContent() {
 
 function App() {
   return (
-    <Router future={{ v7_relativeSplatPath: true }}>
+    <Router basename="/admin">
       <ThemeProvider>
         <AppContent />
       </ThemeProvider>
