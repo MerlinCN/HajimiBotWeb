@@ -28,6 +28,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Generate version.json
+        run: |
+          echo '{
+            "version": "${GITHUB_REF#refs/tags/}",
+            "build_time": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "commit": "${GITHUB_SHA}"
+          }' > dist/version.json
+
       - name: Create tar archive
         run: |
           cd dist
