@@ -19,6 +19,7 @@ interface PluginInfo {
   name: string;
   description: string;
   config: PluginConfig;
+  can_reload?: boolean;
 }
 
 interface PluginInfoResponse {
@@ -29,7 +30,7 @@ interface PluginInfoResponse {
 const getBaseURL = () => {
   // 开发环境直接使用后端地址
   if (import.meta.env.DEV) {
-    return 'http://127.0.0.1:12455';
+    return 'http://127.0.0.1:12455/api';
   }
   
   // 生产环境使用相对路径
@@ -148,6 +149,7 @@ export const pluginsApi = {
         id: pluginInfo.module_name,
         name: pluginInfo.name,
         description: pluginInfo.description,
+        can_reload: pluginInfo.can_reload,
         settings: Object.entries(pluginInfo.config.fields).map(([key, field]) => ({
           key,
           type: field.input_type as PluginSettingType,
@@ -157,7 +159,6 @@ export const pluginsApi = {
           default: field.default,
           options: Array.isArray(field.value) ? field.value : undefined
         })),
-        actions: [] // 暂时不实现actions
       };
     } catch (error) {
       console.error('Error fetching plugin config:', error);
@@ -260,7 +261,8 @@ export const pluginsApi = {
       success: false,
       message: '未知的操作'
     };
-  }
+  },
+
 };
 
 export default api;

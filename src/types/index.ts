@@ -24,9 +24,28 @@ export interface ChatMessage {
   timestamp: string;
 }
 
-export interface PluginAction {
+export interface ConfigField {
+  value: any;
+  title: string;
+  description: string;
+  default: any;
+  input_type: string;
+}
+
+export interface PluginConfig {
+  fields: Record<string, ConfigField>;
+}
+
+export interface PluginInfo {
+  module_name: string;
   name: string;
-  endpoint: string;
+  description: string;
+  config: PluginConfig;
+  can_reload?: boolean;
+}
+
+export interface PluginInfoResponse {
+  data: PluginInfo;
 }
 
 export type PluginSettingType = 
@@ -45,6 +64,7 @@ export interface PluginSetting {
   value: any;
   options?: string[] | number[];
   description?: string;
+  default?: any;
 }
 
 export interface Plugin {
@@ -52,7 +72,7 @@ export interface Plugin {
   name: string;
   description?: string;
   settings: PluginSetting[];
-  actions: PluginAction[];
+  can_reload?: boolean;
 }
 
 export interface AuthResponse {

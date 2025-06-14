@@ -7,6 +7,8 @@ import { useToast } from '../../context/ToastContext';
 import PluginSettings from './PluginSettings';
 import PluginActions from './PluginActions';
 import { PlusIcon } from '@radix-ui/react-icons';
+import 'katex/dist/katex.min.css';
+import katex from 'katex';
 
 const PluginManager: React.FC = () => {
   const [pluginList, setPluginList] = useState<{ id: string; name: string }[]>([]);
@@ -63,7 +65,6 @@ const PluginManager: React.FC = () => {
           name: pluginList.find(p => p.id === selectedPluginId)?.name || '未知插件',
           description: '加载失败',
           settings: [],
-          actions: []
         });
       } finally {
         setIsLoading(false);
@@ -152,21 +153,40 @@ const PluginManager: React.FC = () => {
             >
               <ScrollArea className="h-full">
                 <div className="flex flex-col gap-8 p-6">
-                  <p className="mt-1 text-sm text-muted-foreground">{selectedPlugin.description}</p>
-
-                  <PluginSettings
-                    plugin={selectedPlugin}
-                    onSaveSettings={(settings) => handleSaveSettings(selectedPlugin.id, settings)}
-                  />
-
-                  {selectedPlugin.actions.length > 0 && (
-                    <PluginActions
-                      pluginId={selectedPlugin.id}
-                      actions={selectedPlugin.actions}
-                      onTriggerAction={(actionEndpoint) => handleTriggerAction(selectedPlugin.id, actionEndpoint)}
+                  <div className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">
+                    {selectedPlugin.description?.split('$').map((part, index) => {
+                      if (index % 2 === 0) {
+                        return <span key={index}>{part}</span>;
+                      } else {
+                        try {
+                          const html = katex.renderToString(part, {
+                            throwOnError: false,
+                            strict: false,
+                            displayMode: false,
+                          });
+                          return (
+                            <span key={index} dangerouslySetInnerHTML={{ __html: html }} />
+                          );
+                        } catch (error) {
+                          console.error('KaTeX error:', error);
+                          return <span key={index}>{part}</span>;
+                        }
+                      }
+                    })}
+                  </div>
+                    <PluginSettings
+                      plugin={selectedPlugin}
+                      onSaveSettings={(settings) => handleSaveSettings(selectedPlugin.id, settings)}
                     />
-                  )}
-                </div>
+
+                    {/* {selectedPlugin.actions.length > 0 && (
+                      <PluginActions
+                        pluginId={selectedPlugin.id}
+                        actions={selectedPlugin.actions}
+                        onTriggerAction={(actionEndpoint) => handleTriggerAction(selectedPlugin.id, actionEndpoint)}
+                      />
+                    )} */}
+                  </div>
               </ScrollArea>
             </TabsContent>
           )}

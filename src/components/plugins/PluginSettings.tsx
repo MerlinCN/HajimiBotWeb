@@ -6,8 +6,9 @@ import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/dialog';
 import { Plugin, PluginSetting } from '../../types';
-import { Pencil, Plus, Minus } from 'lucide-react';
+import { Pencil, Plus, Minus, RefreshCw } from 'lucide-react';
 import api from '../../services/api';
+import { pluginsApi } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 // 添加全局样式
@@ -32,9 +33,11 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
     plugin.settings.reduce((acc, setting) => ({ ...acc, [setting.key]: setting.value }), {})
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeSettingKey, setActiveSettingKey] = useState<string>('');
+  const [reloadDialogOpen, setReloadDialogOpen] = useState(false);
   const { addToast } = useToast();
   const handleChange = (key: string, value: any) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
@@ -74,6 +77,40 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
       console.error('保存设置错误:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleReload = async () => {
+    if (isReloading) return;
+    setIsReloading(true);
+    try {
+      const result = await api.get(`/plugins/reload?module_name=${plugin.id}`);
+      if (result.data.code === 0) {
+        addToast({
+          title: "成功",
+          description: result.data.message || "插件重新加载成功",
+          type: "success"
+        });
+        // 重新获取插件数据
+        const updatedPlugin = await pluginsApi.getPluginConfig(plugin.id);
+        onSaveSettings(updatedPlugin.settings.reduce((acc: Record<string, any>, setting: PluginSetting) => ({ ...acc, [setting.key]: setting.value }), {}));
+      } else {
+        addToast({
+          title: "错误",
+          description: result.data.message || "插件重新加载失败",
+          type: "destructive"
+        });
+      }
+    } catch (error) {
+      addToast({
+        title: "错误",
+        description: "插件重新加载时发生错误",
+        type: "destructive"
+      });
+      console.error('重新加载插件错误:', error);
+    } finally {
+      setIsReloading(false);
+      setReloadDialogOpen(false);
     }
   };
 
@@ -294,7 +331,17 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
         ))}
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        {plugin.can_reload && (
+          <Button
+            variant="outline"
+            onClick={() => setReloadDialogOpen(true)}
+            disabled={isReloading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isReloading ? 'animate-spin' : ''}`} />
+            重新加载
+          </Button>
+        )}
         <Button
           onClick={handleSave}
           disabled={isLoading || !hasChanges}
@@ -325,6 +372,25 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
             </Button>
             <Button onClick={() => handleDialogSave(settings[activeSettingKey])}>
               确定
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={reloadDialogOpen} onOpenChange={setReloadDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>❗注意</DialogTitle>
+            <DialogDescription>
+              重新加载插件是危险且未知的行为，是否继续？
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReloadDialogOpen(false)}>
+              取消
+            </Button>
+            <Button variant="destructive" onClick={handleReload}>
+              确认
             </Button>
           </DialogFooter>
         </DialogContent>
