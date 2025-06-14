@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*' # 匹配所有以 v 开头的 tag
 
+# 添加权限配置
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
