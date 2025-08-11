@@ -14,10 +14,17 @@ import SendMessage from '../components/message/SendMessage';
 const DashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [shouldRefreshGroups, setShouldRefreshGroups] = useState(false);
   const { logout, botInfo, userRole } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
   const handleTabChange = (value: string) => {
+    // 如果切换到群聊总览，设置刷新标志
+    if (value === 'overview' && activeTab !== 'overview') {
+      setShouldRefreshGroups(true);
+    } else {
+      setShouldRefreshGroups(false);
+    }
     setActiveTab(value);
     setIsMobileMenuOpen(false);
   };
@@ -144,7 +151,11 @@ const DashboardPage: React.FC = () => {
                     </p>
                   </div>
 
-                  <GroupList viewMode="grid" />
+                  <GroupList 
+                    viewMode="grid" 
+                    forceRefresh={shouldRefreshGroups} 
+                    onRefreshComplete={() => setShouldRefreshGroups(false)}
+                  />
                 </div>
               </ScrollArea>
             </TabsContent>

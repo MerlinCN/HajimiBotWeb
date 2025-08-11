@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { PersonIcon, GroupIcon } from '@radix-ui/react-icons';
 import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
-import { ChatGroup } from '../../types';
-import { groupsApi } from '../../services/api';
+import { useGroups } from '../../context/GroupsContext';
 import { useToast } from '../../context/ToastContext';
 import { truncateText } from '../../lib/utils';
 
@@ -13,37 +12,56 @@ interface GroupListProps {
   onSelectGroup?: (groupId: string) => void;
   selectedGroupId?: string | null;
   viewMode?: 'list' | 'grid';
+  forceRefresh?: boolean;
+  onRefreshComplete?: () => void;
 }
 
-const GroupList: React.FC<GroupListProps> = ({ onSelectGroup, selectedGroupId, viewMode = 'list' }) => {
-  const [groups, setGroups] = useState<ChatGroup[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+const GroupList: React.FC<GroupListProps> = ({ 
+  onSelectGroup, 
+  selectedGroupId, 
+  viewMode = 'list',
+  forceRefresh = false,
+  onRefreshComplete
+}) => {
+  const { groups, isLoading, error, fetchGroups } = useGroups();
   const { addToast } = useToast();
 
   useEffect(() => {
-    const fetchGroups = async () => {
+    const loadGroups = async () => {
       try {
-        const fetchedGroups = await groupsApi.getGroups();
-        console.log('获取到的群组数据:', fetchedGroups);
-        setGroups(fetchedGroups);
-        
-        // Select first group if none selected
-        if (!selectedGroupId && fetchedGroups.length > 0 && onSelectGroup) {
-          onSelectGroup(fetchedGroups[0].group_id);
+        await fetchGroups(forceRefresh);
+        // 如果是强制刷新且有回调，调用完成回调
+        if (forceRefresh && onRefreshComplete) {
+          onRefreshComplete();
         }
       } catch {
-        addToast({
-          title: '获取群聊列表失败',
-          description: '请检查您的网络连接并刷新页面重试',
-          type: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
+        // 错误已在 context 中处理
+        if (forceRefresh && onRefreshComplete) {
+          onRefreshComplete();
+        }
       }
     };
 
-    fetchGroups();
-  }, [selectedGroupId, onSelectGroup, addToast]);
+    loadGroups();
+  }, [fetchGroups, forceRefresh, onRefreshComplete]);
+
+  // 选择第一个群组的逻辑独立出来
+  useEffect(() => {
+    if (!selectedGroupId && groups.length > 0 && onSelectGroup) {
+      onSelectGroup(groups[0].group_id);
+    }
+  }, [selectedGroupId, onSelectGroup, groups]);
+
+  // 显示错误提示
+  useEffect(() => {
+    if (error) {
+      addToast({
+        title: '获取群聊列表失败',
+        description: '请检查您的网络连接并刷新页面重试',
+        type: 'destructive',
+      });
+    }
+  }, [error, addToast]);
 
   if (viewMode === 'grid') {
     return (

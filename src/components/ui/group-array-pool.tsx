@@ -4,8 +4,7 @@ import { Label } from './label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Avatar, AvatarImage, AvatarFallback } from './avatar';
 import { X } from 'lucide-react';
-import { ChatGroup } from '../../types';
-import { groupsApi } from '../../services/api';
+import { useGroups } from '../../context/GroupsContext';
 
 interface GroupArrayPoolProps {
   label: string;
@@ -20,24 +19,13 @@ const GroupArrayPool: React.FC<GroupArrayPoolProps> = ({
   onChange,
   description
 }) => {
-  const [groups, setGroups] = useState<ChatGroup[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { groups, isLoading, fetchGroups } = useGroups();
   const [selectValue, setSelectValue] = useState<string>('');
 
   useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const groupList = await groupsApi.getGroups();
-        setGroups(groupList);
-      } catch (error) {
-        console.error('Failed to fetch groups:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGroups();
-  }, []);
+    // 使用全局状态获取群组，不强制刷新
+    fetchGroups(false);
+  }, [fetchGroups]);
 
   const handleAddGroup = (groupId: string) => {
     const numGroupId = parseInt(groupId);
@@ -72,7 +60,7 @@ const GroupArrayPool: React.FC<GroupArrayPoolProps> = ({
             return (
               <div
                 key={groupId}
-                className="group relative flex items-center gap-2 rounded-md bg-primary/10 px-3 py-1.5 text-sm"
+                className="group relative flex items-center gap-2 rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm"
               >
                 <Avatar className="h-8 w-8 flex-shrink-0">
                   <AvatarImage 
@@ -85,7 +73,7 @@ const GroupArrayPool: React.FC<GroupArrayPoolProps> = ({
                 </Avatar>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-primary truncate">
+                  <div className="font-medium text-foreground truncate">
                     {groupInfo?.group_name || `未知群聊`}
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -96,7 +84,7 @@ const GroupArrayPool: React.FC<GroupArrayPoolProps> = ({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 p-0 hover:bg-destructive/20 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-destructive/20 text-destructive opacity-0 group-hover:opacity-100 transition-opacity -mt-0.5"
                   onClick={() => handleRemoveGroup(groupId)}
                 >
                   <X className="h-3 w-3" />
@@ -111,12 +99,12 @@ const GroupArrayPool: React.FC<GroupArrayPoolProps> = ({
           <Select
             value={selectValue}
             onValueChange={handleAddGroup}
-            disabled={loading || availableGroups.length === 0}
+            disabled={isLoading || availableGroups.length === 0}
           >
             <SelectTrigger className="flex-1">
               <SelectValue 
                 placeholder={
-                  loading 
+                  isLoading 
                     ? "加载群聊列表中..." 
                     : availableGroups.length === 0 
                       ? "所有群聊已添加" 
@@ -126,7 +114,11 @@ const GroupArrayPool: React.FC<GroupArrayPoolProps> = ({
             </SelectTrigger>
             <SelectContent>
               {availableGroups.map((group) => (
-                <SelectItem key={group.group_id} value={group.group_id}>
+                <SelectItem 
+                  key={group.group_id} 
+                  value={group.group_id}
+                  className="focus:bg-gray-100 dark:focus:bg-gray-800 focus:text-foreground"
+                >
                   <div className="flex items-center gap-2 py-1">
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={group.group_avatar} alt={group.group_name} />
@@ -135,7 +127,7 @@ const GroupArrayPool: React.FC<GroupArrayPoolProps> = ({
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate text-foreground">{group.group_name}</div>
+                      <div className="font-medium truncate">{group.group_name}</div>
                       <div className="text-xs text-muted-foreground">
                         {group.group_id} • {group.group_member_count}人
                       </div>

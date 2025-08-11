@@ -7,8 +7,8 @@ import { Label } from '../ui/label';
 import { ScrollArea } from '../ui/scroll-area';
 import { Separator } from '../ui/separator';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
-import { ChatGroup } from '../../types';
-import { groupsApi, messageApi } from '../../services/api';
+import { useGroups } from '../../context/GroupsContext';
+import { messageApi } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 enum MessageContentType {
@@ -30,7 +30,7 @@ interface SendMessageRequest {
 }
 
 const SendMessage: React.FC = () => {
-  const [groups, setGroups] = useState<ChatGroup[]>([]);
+  const { groups, fetchGroups, error } = useGroups();
   const [selectedGroups, setSelectedGroups] = useState<number[]>([]);
   const [messageContent, setMessageContent] = useState<MessageContent[]>([
     { type: MessageContentType.TEXT, content: '' }
@@ -65,30 +65,37 @@ const SendMessage: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchGroups = async () => {
+    const loadGroups = async () => {
       try {
-        const fetchedGroups = await groupsApi.getGroups();
-        setGroups(fetchedGroups);
+        // 使用全局状态获取群组，不强制刷新
+        await fetchGroups(false);
         
         // 恢复之前保存的群组选择
         const savedSelection = loadSelectedGroups();
         if (savedSelection.length > 0) {
           // 只保留仍然存在的群组
-          const validGroupIds = fetchedGroups.map(g => g.group_id);
+          const validGroupIds = groups.map(g => g.group_id);
           const validSelection = savedSelection.filter(id => validGroupIds.includes(id));
           setSelectedGroups(validSelection);
         }
       } catch {
-        addToast({
-          title: '获取群组失败',
-          description: '无法加载群组列表',
-          type: 'destructive',
-        });
+        // 错误已在 context 中处理
       }
     };
 
-    fetchGroups();
-  }, [addToast]);
+    loadGroups();
+  }, [fetchGroups, groups]);
+
+  // 显示错误提示
+  useEffect(() => {
+    if (error) {
+      addToast({
+        title: '获取群组失败',
+        description: '无法加载群组列表',
+        type: 'destructive',
+      });
+    }
+  }, [error, addToast]);
 
   const addMessageContent = (type: MessageContentType) => {
     // 如果要添加图片，且已经勾选发送公告，检查是否已有图片
