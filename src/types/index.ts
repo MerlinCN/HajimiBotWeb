@@ -14,6 +14,7 @@ export interface ChatGroup {
   group_id: string;
   group_name: string;
   group_member_count: number;
+  group_avatar: string;
 }
 
 export interface ChatMessage {
@@ -25,10 +26,10 @@ export interface ChatMessage {
 }
 
 export interface ConfigField {
-  value: any;
+  value: unknown;
   title: string;
   description: string;
-  default: any;
+  default: unknown;
   input_type: string;
 }
 
@@ -61,10 +62,10 @@ export interface PluginSetting {
   key: string;
   type: PluginSettingType;
   label: string;
-  value: any;
+  value: unknown;
   options?: string[] | number[];
   description?: string;
-  default?: any;
+  default?: unknown;
 }
 
 export interface Plugin {
@@ -73,10 +74,20 @@ export interface Plugin {
   description?: string;
   settings: PluginSetting[];
   can_reload?: boolean;
+  actions?: PluginAction[];
 }
+
+export interface PluginAction {
+  name: string;
+  endpoint: string;
+  description?: string;
+}
+
+export type UserRole = 'admin' | 'user';
 
 export interface AuthResponse {
   success: boolean;
   message?: string;
   bot?: BotInfo;
+  role?: UserRole;
 }

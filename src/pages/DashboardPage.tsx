@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ExitIcon, HomeIcon, ChatBubbleIcon, GearIcon, MoonIcon, SunIcon, HamburgerMenuIcon } from '@radix-ui/react-icons';
+import { ExitIcon, HomeIcon, ChatBubbleIcon, GearIcon, MoonIcon, SunIcon, HamburgerMenuIcon, PaperPlaneIcon } from '@radix-ui/react-icons';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { Button } from '../components/ui/button';
 import { ScrollArea } from '../components/ui/scroll-area';
@@ -7,40 +7,27 @@ import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '../components/ui/sheet';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { groupsApi } from '../services/api';
-import { ChatGroup } from '../types';
 import PluginManager from '../components/plugins/PluginManager';
+import GroupList from '../components/chat/GroupList';
+import SendMessage from '../components/message/SendMessage';
 
 const DashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [groups, setGroups] = useState<ChatGroup[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { logout, botInfo } = useAuth();
+  const { logout, botInfo, userRole } = useAuth();
   const { isDark, toggleTheme } = useTheme();
-
-  useEffect(() => {
-    const fetchGroups = async () => {
-      if (activeTab !== 'overview') return;
-      
-      setIsLoading(true);
-      try {
-        const fetchedGroups = await groupsApi.getGroups();
-        setGroups(fetchedGroups);
-      } catch (error) {
-        console.error('Error fetching groups:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchGroups();
-  }, [activeTab]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setIsMobileMenuOpen(false);
   };
+
+  // 如果用户权限下访问插件管理页面，自动跳转到发送消息页面
+  useEffect(() => {
+    if (userRole === 'user' && activeTab === 'plugins') {
+      setActiveTab('send-message');
+    }
+  }, [userRole, activeTab]);
 
   const DashboardNavItems = () => (
     <>
@@ -53,13 +40,23 @@ const DashboardPage: React.FC = () => {
         群聊总览
       </TabsTrigger>
       <TabsTrigger 
-        value="plugins" 
+        value="send-message" 
         className="w-full justify-start gap-2 px-4 py-2.5 data-[state=active]:bg-background"
-        onClick={() => handleTabChange('plugins')}
+        onClick={() => handleTabChange('send-message')}
       >
-        <GearIcon className="h-4 w-4" />
-        插件管理
+        <PaperPlaneIcon className="h-4 w-4" />
+        发送消息
       </TabsTrigger>
+      {userRole === 'admin' && (
+        <TabsTrigger 
+          value="plugins" 
+          className="w-full justify-start gap-2 px-4 py-2.5 data-[state=active]:bg-background"
+          onClick={() => handleTabChange('plugins')}
+        >
+          <GearIcon className="h-4 w-4" />
+          插件管理
+        </TabsTrigger>
+      )}
     </>
   );
 
@@ -143,54 +140,28 @@ const DashboardPage: React.FC = () => {
                   <div className="mb-8">
                     <h2 className="text-2xl font-bold">群聊总览</h2>
                     <p className="text-muted-foreground">
-                      当前加入了 {groups.length} 个群聊
+                      查看机器人加入的所有群聊
                     </p>
                   </div>
 
-                  {isLoading ? (
-                    <div className="flex h-40 items-center justify-center">
-                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                    </div>
-                  ) : groups.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <ChatBubbleIcon className="mb-4 h-16 w-16 text-muted-foreground" />
-                      <h3 className="text-lg font-medium">暂无群聊</h3>
-                      <p className="text-sm text-muted-foreground">
-                        添加机器人到QQ群聊即可在此处显示
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {groups.map((group) => (
-                        <div
-                          key={group.group_id}
-                          className="rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
-                        >
-                          <div className="mb-4 flex items-center justify-between">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                              <ChatBubbleIcon className="h-6 w-6 text-primary" />
-                            </div>
-                            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                              {group.group_member_count} 人
-                            </span>
-                          </div>
-                          <h3 className="mb-2 text-lg font-semibold">
-                            {group.group_name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            群号：{group.group_id}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <GroupList viewMode="grid" />
                 </div>
               </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="plugins" className="h-full overflow-hidden m-0">
-              <PluginManager />
+            <TabsContent value="send-message" className="h-full overflow-hidden m-0">
+              <ScrollArea className="h-full">
+                <div className="container max-w-2xl p-6">
+                  <SendMessage />
+                </div>
+              </ScrollArea>
             </TabsContent>
+            
+            {userRole === 'admin' && (
+              <TabsContent value="plugins" className="h-full overflow-hidden m-0">
+                <PluginManager />
+              </TabsContent>
+            )}
           </div>
         </Tabs>
       </main>

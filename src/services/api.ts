@@ -1,12 +1,12 @@
 import axios from 'axios';
-import { AuthResponse, ChatGroup, ChatMessage, Plugin, BotInfo, PluginSettingType } from '../types';
+import { AuthResponse, ChatGroup, Plugin, PluginSettingType, UserRole } from '../types';
 
 // 插件API响应类型定义
 interface ConfigField {
-  value: any;
+  value: unknown;
   title: string;
   description: string;
-  default: any;
+  default: unknown;
   input_type: string;
 }
 
@@ -77,34 +77,37 @@ api.interceptors.response.use(
   }
 );
 
-// Mock bot info
-const mockBotInfo: BotInfo = {
-  qq: "2854196310",
-  nickname: "小助手",
-  avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=2854196310"
-};
-
 // Auth API
 export const authApi = {
   login: async (token: string): Promise<AuthResponse> => {
     try {
-      const response = await api.post<{ message: string; code: number; token: string }>('/auth', { auth_token: token });
+      const response = await api.post<{ message: string; code: number; token: string; role: UserRole }>('/auth', { auth_token: token });
       
       if (response.data.code === 0) {
         // 设置 cookie
         document.cookie = `auth_token=${response.data.token}; path=/`;
-        return { success: true, message: response.data.message };
+        document.cookie = `user_role=${response.data.role}; path=/`;
+        return { success: true, message: response.data.message, role: response.data.role };
       }
       
       return { success: false, message: response.data.message };
-    } catch (error) {
+    } catch {
       return { success: false, message: 'Authentication failed' };
     }
   },
 
   logout: async (): Promise<void> => {
     document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     window.location.href = '/admin/login';
+  },
+
+  getUserRole: (): UserRole | null => {
+    const role = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('user_role='))
+      ?.split('=')[1];
+    return (role as UserRole) || null;
   },
 };
 
@@ -166,7 +169,7 @@ export const pluginsApi = {
     }
   },
 
-  updatePluginSettings: async (pluginId: string, settings: Record<string, any>): Promise<void> => {
+  updatePluginSettings: async (pluginId: string, settings: Record<string, unknown>): Promise<void> => {
     try {
       // 获取插件配置以获取字段类型信息
       const pluginConfig = await api.get<PluginInfoResponse>(`/plugins/config?module_name=${pluginId}`);
@@ -182,7 +185,7 @@ export const pluginsApi = {
           acc[key] = value;
         }
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, unknown>);
 
       await api.post('/plugins/set_config', {
         module_name: pluginId,
@@ -263,6 +266,32 @@ export const pluginsApi = {
     };
   },
 
+};
+
+// 消息发送相关接口
+export const messageApi = {
+  sendMessage: async (request: {
+    group_ids: number[];
+    message_content: Array<{
+      type: string;
+      content: string;
+    }>;
+    at_all: boolean;
+    set_essence: boolean;
+    set_announcement: boolean;
+  }): Promise<{
+    message: string;
+    code: number;
+    failed_groups: number[];
+  }> => {
+    try {
+      const response = await api.post('/send_message', request);
+      return response.data;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      throw error;
+    }
+  },
 };
 
 export default api;

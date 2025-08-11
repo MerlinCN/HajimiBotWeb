@@ -5,7 +5,6 @@ import { pluginsApi } from '../../services/api';
 import { Plugin } from '../../types';
 import { useToast } from '../../context/ToastContext';
 import PluginSettings from './PluginSettings';
-import PluginActions from './PluginActions';
 import { PlusIcon } from '@radix-ui/react-icons';
 import 'katex/dist/katex.min.css';
 import katex from 'katex';
@@ -28,7 +27,7 @@ const PluginManager: React.FC = () => {
         if (fetchedPlugins.length > 0 && !selectedPluginId) {
           setSelectedPluginId(fetchedPlugins[0].id);
         }
-      } catch (error) {
+      } catch {
         addToast({
           title: '获取插件失败',
           description: '无法加载插件列表，请刷新页面重试',
@@ -53,7 +52,7 @@ const PluginManager: React.FC = () => {
         setIsLoading(true);
         const pluginConfig = await pluginsApi.getPluginConfig(selectedPluginId);
         setSelectedPlugin(pluginConfig);
-      } catch (error) {
+      } catch {
         addToast({
           title: '获取插件配置失败',
           description: '无法加载插件配置，请重试',
@@ -73,7 +72,7 @@ const PluginManager: React.FC = () => {
     fetchPluginConfig();
   }, [selectedPluginId, pluginList]);
 
-  const handleSaveSettings = async (pluginId: string, settings: Record<string, any>) => {
+  const handleSaveSettings = async (pluginId: string, settings: Record<string, unknown>) => {
     try {
       await pluginsApi.updatePluginSettings(pluginId, settings);
       // 重新获取插件配置以更新本地状态
@@ -97,7 +96,7 @@ const PluginManager: React.FC = () => {
         description: result.message,
         type: result.success ? 'success' : 'destructive',
       });
-    } catch (error) {
+    } catch {
       addToast({
         title: '操作失败',
         description: '执行插件操作时发生错误',

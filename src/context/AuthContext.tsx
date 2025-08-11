@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../services/api';
-import { BotInfo } from '../types';
+import { BotInfo, UserRole } from '../types';
 import api from '../services/api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   botInfo: BotInfo | null;
+  userRole: UserRole | null;
   login: (token: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
 }
@@ -26,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [botInfo, setBotInfo] = useState<BotInfo | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,19 +42,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (!token) {
           setIsAuthenticated(false);
+          setUserRole(null);
           return;
         }
+
+        // 获取存储的用户角色
+        const storedRole = authApi.getUserRole();
+        setUserRole(storedRole);
 
         // 如果有 token，先设置为已认证状态
         setIsAuthenticated(true);
         
-        // 然后异步验证 token 是否有效
+        // 然后异步验证 token 是否有效并获取最新角色
         try {
-          const response = await api.get('/auth/verify');
+          const response = await api.get<{ message: string; code: number; role: UserRole }>('/auth/verify');
           if (response.data.code !== 0) {
             // 如果验证失败，清除认证状态
             setIsAuthenticated(false);
+            setUserRole(null);
             document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+          } else {
+            // 更新用户角色
+            setUserRole(response.data.role);
+            document.cookie = `user_role=${response.data.role}; path=/`;
           }
         } catch (error) {
           // 如果验证请求失败，保持当前状态
@@ -75,6 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (response.success) {
         setIsAuthenticated(true);
+        setUserRole(response.role || 'user');
         if (response.bot) {
           setBotInfo(response.bot);
         }
@@ -86,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         success: false, 
         message: response.message || 'Authentication failed' 
       };
-    } catch (error) {
+    } catch {
       return { 
         success: false, 
         message: 'An error occurred during authentication' 
@@ -103,13 +117,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsAuthenticated(false);
       setBotInfo(null);
+      setUserRole(null);
       setIsLoading(false);
       navigate('/admin/login');
     }
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, botInfo, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, botInfo, userRole, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
