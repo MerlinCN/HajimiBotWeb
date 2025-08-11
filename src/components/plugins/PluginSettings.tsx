@@ -5,6 +5,8 @@ import { Switch } from '../ui/switch';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../ui/dialog';
+import TagPool from '../ui/tag-pool';
+import GroupArrayPool from '../ui/group-array-pool';
 import { Plugin, PluginSetting } from '../../types';
 import { Pencil, Plus, Minus, RefreshCw } from 'lucide-react';
 import api from '../../services/api';
@@ -162,52 +164,14 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
           </div>
         );
       case 'stringArray':
-        const values = settings[setting.key] || [''];
         return (
-          <div className="space-y-2">
-            <Label htmlFor={setting.key}>{setting.label}</Label>
-            <div className="space-y-2">
-              {(values.length === 0 ? [''] : values).map((value: string, index: number) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    id={`${setting.key}-${index}`}
-                    value={value}
-                    onChange={(e) => {
-                      const newValues = [...values];
-                      newValues[index] = e.target.value;
-                      handleChange(setting.key, newValues);
-                    }}
-                    placeholder={`输入${setting.label}`}
-                  />
-                  {values.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        const newValues = values.filter((_: string, i: number) => i !== index);
-                        handleChange(setting.key, newValues.length ? newValues : ['']);
-                      }}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {index === values.length - 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        handleChange(setting.key, [...values, '']);
-                      }}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+          <TagPool
+            label={setting.label}
+            value={settings[setting.key] || []}
+            onChange={(value) => handleChange(setting.key, value)}
+            placeholder={`添加${setting.label}项目`}
+            description={setting.description}
+          />
         );
       case 'numberArray':
         const numberValues = settings[setting.key] || [];
@@ -296,6 +260,15 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
           );
         }
         return null;
+      case 'groupArray':
+        return (
+          <GroupArrayPool
+            label={setting.label}
+            value={settings[setting.key] || []}
+            onChange={(value) => handleChange(setting.key, value)}
+            description={setting.description}
+          />
+        );
       default:
         return null;
     }
@@ -324,9 +297,6 @@ const PluginSettings: React.FC<PluginSettingsProps> = ({ plugin, onSaveSettings 
         {plugin.settings.map((setting) => (
           <div key={setting.key} className="space-y-2">
             {renderSettingField(setting)}
-            {setting.description && (
-              <p className="text-sm text-muted-foreground">{setting.description}</p>
-            )}
           </div>
         ))}
       </div>

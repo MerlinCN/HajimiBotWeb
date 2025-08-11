@@ -56,7 +56,8 @@ export type PluginSettingType =
   | 'array' 
   | 'object'
   | 'stringArray'
-  | 'numberArray';
+  | 'numberArray'
+  | 'groupArray';
 
 export interface PluginSetting {
   key: string;

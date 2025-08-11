@@ -181,6 +181,9 @@ export const pluginsApi = {
         if (field?.input_type === 'stringArray' && Array.isArray(value)) {
           // 过滤掉空字符串
           acc[key] = value.filter((v: string) => v !== '');
+        } else if (field?.input_type === 'groupArray' && Array.isArray(value)) {
+          // groupArray 存储为数字数组
+          acc[key] = value.filter((v: number) => typeof v === 'number' && !isNaN(v));
         } else {
           acc[key] = value;
         }
